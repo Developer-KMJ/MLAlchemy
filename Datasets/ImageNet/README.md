@@ -1,17 +1,22 @@
 # Preparation of ImageNet (ILSVRC2012)
 
------------------------------------------------------------------------------
+Special thanks
+----
 Special thanks to Antoine Broyelle, this directory is a mirror of instructions from 
-his github site https://gist.github.com/antoinebrl/7d00d5cb6c95ef194c737392ef7e476a
+their site [Antoine Broyelle Github Site](https://gist.github.com/antoinebrl/7d00d5cb6c95ef194c737392ef7e476a)
 
 The datasets can also be downloaded from Kaggle at:
 https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data
 
-or directly from image-net.org using the following wget commands:
-In addition to the download.php the files can be downloaded directoy using wget:
+-or-
+
+From image-net.org using the following wget commands:
 wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar --no-check-certificate 
-wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-certificate to download the dataset files.
-------------------------------------------------------------------------------
+wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar --no-check-certificate to 
+
+
+Download the dataset files.
+----
 
 The dataset can be found on the [official website](https://image-net.org/download.php) if you are affiliated with
 a research organization. It is also available on Academic torrents.
