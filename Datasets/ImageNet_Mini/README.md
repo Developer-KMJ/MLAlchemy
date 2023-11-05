@@ -10,6 +10,7 @@ The ImageNet Mini subset structure
 1) We narrow down the selection to just 200 classes instead of the full 1000 in ImageNet.
 2) For each class, we select 500 training samples.
 3) Additionally, we select 50 validation samples for each class.
+4) And 25 samples for each class for final validation.
 
 Download
 ----
@@ -20,6 +21,10 @@ To use it:
 
 1) Navigate to your project's root directory.
 2) Run the script using python imagenet_mini.py.
+
+Afterward you may want to create a tar file and upload it to a directory
+for your future download. To create the tar file use the following command:
+tar -cvzf imagenet_mini.tar.gz ./imagenet_mini
 ```
 
 The script will download the validation tar file to the execution location and create the following directory structure:
@@ -47,6 +52,10 @@ imagenet_mini/
 │   │   ├── n01443537_2327.JPEG
 │   │   ├── n01443537_3510.JPEG
 │   │   └── ...
+├── test/
+│   ├── n01440764
+│   │   ├── n01440764_959.JPEG
+│   │   ├── n01440764_1734.JPEG
 ```
 
 

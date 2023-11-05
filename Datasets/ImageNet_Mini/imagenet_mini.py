@@ -11,6 +11,7 @@ from typing import List
 base_dir = 'imagenet_mini'
 train_dir = 'imagenet_mini/train'
 val_dir = 'imagenet_mini/val'
+test_dir = 'imagenet_mini/test'
 
 ''' Displays the progress of the download in the console
     Uses a closure to keep a static out of the global namespace,
@@ -130,6 +131,7 @@ def extract_images(tar_file: str) -> None:
             name: str = os.path.splitext(os.path.basename(member.name))[0]
             new_train_path: str = os.path.join(train_dir, name)
             new_val_path: str = os.path.join(val_dir, name)
+            new_test_path: str = os.path.join(test_dir, name)
 
             # Extract the inner tar file and its contents.
             with tar.extractfile(member) as f, tarfile.open(fileobj=f, mode='r') as inner_tar:
@@ -137,11 +139,16 @@ def extract_images(tar_file: str) -> None:
                     m for m in inner_tar.getmembers() if m.isfile()]
                 inner_members.sort(key=lambda inner_member: inner_member.name)
                 inner_member_sample: List[tarfile.TarInfo] = random.sample(
-                    inner_members, 550)
+                    inner_members, 575)
 
                 # Extract the image file to the appropriate directory.
                 for j, child in enumerate(inner_member_sample):
-                    child_path: str = new_train_path if j < 500 else new_val_path
+                    if j < 500:
+                        child_path = new_train_path
+                    elif j < 550:
+                        child_path = new_val_path
+                    else:
+                        child_path = new_test_path
                     inner_tar.extract(child, child_path)
             print(f"Extracted {name}")
     print("Extraction complete!")
