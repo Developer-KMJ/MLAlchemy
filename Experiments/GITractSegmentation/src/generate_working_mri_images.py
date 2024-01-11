@@ -65,12 +65,12 @@ def main():
 
             # Generate the coronal MRI images for the specific case and day,
             # using the axial images we just generated.
-            generate_coronal_mri(case_axial_image_path, case_coronal_image_path, case_number, day)
-            generate_coronal_mri(case_axial_mask_path, case_coronal_mask_path, case_number, day)
+            generate_coronal_from_axial_mri(case_axial_image_path, case_coronal_image_path, case_number, day)
+            generate_coronal_from_axial_mri(case_axial_mask_path, case_coronal_mask_path, case_number, day)
                 
             # Generate the sagittal MRI images for the specific case and day
-            generate_sagittal_mri(case_axial_image_path, case_sagittal_image_path, case_number, day)
-            generate_sagittal_mri(case_axial_mask_path, case_sagittal_mask_path, case_number, day)
+            generate_sagittal_from_axial_mri(case_axial_image_path, case_sagittal_image_path, case_number, day)
+            generate_sagittal_from_axial_mri(case_axial_mask_path, case_sagittal_mask_path, case_number, day)
 
     StageDirectories(out_path, out_path + '_staged')
 
@@ -131,127 +131,75 @@ def generate_axial_mri(axial_slices_path : str,
             cv2.imwrite(os.path.join(output_path_mask, name), blank)
 
 
-def generate_sagittal_mri(axial_slices_path : str, output_path: str, case: str, day: str):
+def generate_coronal_from_axial_mri(axial_slices_path : str, output_path: str, case: str, day: str):
+    
+    cache = __get_image_cache_from_directory(axial_slices_path)
+    __save_sliced_images(cache, output_path, (1, 0, 2, 3), case, day, scale_height=3)
 
+def generate_axial_from_coronal_mri(coronal_slices_path : str, output_path: str, case: str, day: str):
+
+    cache = __get_image_cache_from_directory(coronal_slices_path)
+    __save_sliced_images(cache, output_path, (1, 0, 2, 3), case, day, reduce_cache=3)
+
+def generate_sagittal_from_axial_mri(axial_slices_path : str, output_path: str, case: str, day: str):
+
+    cache = __get_image_cache_from_directory(axial_slices_path)
+    __save_sliced_images(cache, output_path, (2, 1, 0, 3), case, day, scale_width=3)
+
+def generate_axial_from_sagittal_mri(sagittal_slices_path : str, output_path: str, case: str, day: str):
+
+    cache = __get_image_cache_from_directory(sagittal_slices_path)
+    __save_sliced_images(cache, output_path, (2, 1, 0, 3), case, day, reduce_cache=3)
+
+
+def __get_image_cache_from_directory(path : str) -> np.ndarray:
+    
     imageFiles = []
-    for imgFile in sorted(os.listdir(axial_slices_path)):
+    for imgFile in sorted(os.listdir(path)):
         if imgFile.endswith('.png'):
             imageFiles.append(imgFile)
 
-    img = cv2.imread(os.path.join(axial_slices_path, imageFiles[0]))
-    width = img.shape[0]
-    height = img.shape[1]
-    sliceCount = len(imageFiles)
-
-    image_cache = []
-    for j_slice_to_width_idx in range(sliceCount):
-        full_path = os.path.join(axial_slices_path, imageFiles[j_slice_to_width_idx])
-        img = cv2.imread(full_path)
-        image_cache.append(img)
-
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
-    # This is slices looking in from the patient's left to right  
-    for location_in_current_height_to_read_slice_from in range(height):
-        new_image = np.zeros((sliceCount, width, 3))
-        for j_slice_to_height_idx in range(sliceCount):
-            full_path = os.path.join(axial_slices_path, imageFiles[j_slice_to_height_idx])
-
-            # img = cv2.imread(full_path)
-            img = image_cache[j_slice_to_height_idx]
-            new_image[j_slice_to_height_idx, :, :] = img[:,location_in_current_height_to_read_slice_from, :]
-
-        new_image = cv2.resize(new_image, (sliceCount * 3, width))
-        name = f'case{case}_day{day}_slice_{str(location_in_current_height_to_read_slice_from).zfill(4)}.png'
-        cv2.imwrite(os.path.join(output_path, name), new_image)
-
-def generate_coronal_mri(axial_slices_path : str, output_path: str, case: str, day: str):
-
-    imageFiles = []
-    for imgFile in sorted(os.listdir(axial_slices_path)):
-        if imgFile.endswith('.png'):
-            imageFiles.append(imgFile)
-
-    img = cv2.imread(os.path.join(axial_slices_path, imageFiles[0]))
-    width = img.shape[0]
-    height = img.shape[1]
-    sliceCount = len(imageFiles)
-
-    image_cache = []
-    for j_slice_to_width_idx in range(sliceCount):
-        full_path = os.path.join(axial_slices_path, imageFiles[j_slice_to_width_idx])
-        img = cv2.imread(full_path)
-        image_cache.append(img)
-
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-
-    # This is the top looking down view. 
-    for location_in_current_width_to_read_slice_from in range(width):
-        new_image = np.zeros((height, sliceCount, 3))
-        for j_slice_to_width_idx in range(sliceCount):
-            full_path = os.path.join(axial_slices_path, imageFiles[j_slice_to_width_idx])
-            # img = cv2.imread(full_path)
-            img = image_cache[j_slice_to_width_idx]
-            new_image[:, j_slice_to_width_idx, :] = img[location_in_current_width_to_read_slice_from, :, :]
-
-        new_image = cv2.resize(new_image, (height, sliceCount * 3))
-        name = f'case{case}_day{day}_slice_{str(location_in_current_width_to_read_slice_from).zfill(4)}.png'
-        cv2.imwrite(os.path.join(output_path, name), new_image)
-
-def generate_axial_from_coronal(coronal_slices_path : str, output_path: str, case: str, day: str):
-
-    imageFiles = []
-    for imgFile in sorted(os.listdir(coronal_slices_path)):
-        if imgFile.endswith('.png'):
-            imageFiles.append(imgFile)
-
-    img = cv2.imread(os.path.join(coronal_slices_path, imageFiles[0]))
+    img = cv2.imread(os.path.join(path, imageFiles[0]))
     height = img.shape[0]
     width = img.shape[1]
     sliceCount = len(imageFiles)
 
     image_cache = []
     for j_slice in range(sliceCount):
-        full_path = os.path.join(coronal_slices_path, imageFiles[j_slice])
+        full_path = os.path.join(path, imageFiles[j_slice])
         img = cv2.imread(full_path)
-        img = cv2.resize(img, (width, int(height/3)))
         image_cache.append(img)
 
-    # After resizing it, we need to re-read the settings.
-    height = image_cache[0].shape[0]
-    width = image_cache[0].shape[1]
-    sliceCount = len(image_cache)
+    final_cache = np.array(image_cache)
+    return final_cache
 
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+def __save_sliced_images(cache : np.ndarray, 
+                   output_path: str, 
+                   axis: (int, int, int, int), 
+                   case: str, 
+                   day: str,
+                   scale_width: float = 1, 
+                   scale_height: float = 1,
+                   reduce_cache: int = 1):
+    
+    os.makedirs(output_path, exist_ok=True)
 
-    # Get each new image individually, and read through all the rows or columns needed to
-    # make the new image.
-    for new_image_index in range(height):
+    temp_cache = cache.transpose(axis)
 
-        new_image = np.zeros((sliceCount, width, 3))
-        for slice in range(sliceCount):
-            img = image_cache[slice]
-            
-            row = img[new_image_index,:, :]
-            new_image[slice, :, :] = row
-
-        name = f'case{case}_day{day}_slice_{str(new_image_index).zfill(4)}.png'
-        cv2.imwrite(os.path.join(output_path, name), img)
+    if reduce_cache > 1:
+        temp_cache = temp_cache[::reduce_cache]
 
     
+    for i in range(temp_cache.shape[0]):
+        height = temp_cache.shape[1]
+        width = temp_cache.shape[2]
+        
+        img = temp_cache[i]
+        
+        img = cv2.resize(img, (int(width * scale_width), int(height * scale_height)))
+        name = f'case{case}_day{day}_slice_{str(i).zfill(4)}.png'
 
-    # for location_in_current_height_to_read_slice_from in range(height):
-    #     new_image = np.zeros((sliceCount, width, 3))
-    #     for j_slice_to_height_idx in range(sliceCount):
-    #         img = image_cache[j_slice_to_height_idx]
-    #         new_image[j_slice_to_height_idx, :, :] = img[:,location_in_current_height_to_read_slice_from, :]
-
-    #     new_image = cv2.resize(new_image, (sliceCount, width))
-    #     name = f'case{case}_day{day}_slice_{str(location_in_current_height_to_read_slice_from).zfill(4)}.png'
-    #     cv2.imwrite(os.path.join(output_path, name), new_image)
+        cv2.imwrite(os.path.join(output_path, name), img)
 
 def get_stats_for_dir(path):
  
