@@ -29,10 +29,11 @@ class GITractDataset(Dataset):
 
 
 class GITractValidationDataset(Dataset):
-    def __init__(self, image_dir, transform=None):
+    def __init__(self, image_dir, mask_dir, transform=None):
         self.image_dir = image_dir
+        self.mask_dir = mask_dir
         self.transform = transform
-        self.images = os.listdir(image_dir)
+        self.images = sorted(os.listdir(image_dir))
 
     def __len__(self):
         return len(self.images)
@@ -41,8 +42,17 @@ class GITractValidationDataset(Dataset):
 
         img_path = os.path.join(self.image_dir, self.images[idx])
         image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+
+        if self.mask_dir is not None:
+            mask_path = os.path.join(self.mask_dir, self.images[idx])
+            mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
+        else:
+            mask = None
       
         if self.transform:
             image = self.transform(image)
-      
-        return image
+            
+            if mask is not None:
+                mask = self.transform(mask)
+            
+        return image, mask, img_path, mask_path

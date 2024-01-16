@@ -139,6 +139,62 @@ def validate(model, dataloader, criterion, epoch, tag, output_path):
         
 def main():
 
+    image_dir_list = [
+            (
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Axial/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Axial/masks",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Axial/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Axial/masks",
+                "/home/kevin/Documents/gitract/output/Axial"
+            ),
+            (
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Coronal/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Coronal/masks",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Coronal/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Coronal/masks",
+                "/home/kevin/Documents/gitract/output/Coronal"
+            ),
+            (
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Sagittal/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/training/Sagittal/masks",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Sagittal/images",
+                "/home/kevin/Documents/gitract/data/Staged_For_Training/validation/Sagittal/masks",
+                "/home/kevin/Documents/gitract/output/Sagittal"
+            )
+    ]
+     
+    for images in image_dir_list:
+        train_image_dir = images[0]
+        train_mask_dir = images[1]
+        validation_image_dir = images[2]
+        validation_mask_dir = images[3]
+        output_path = images[4]
+
+        train_dataset = GITractDataset(train_image_dir, train_mask_dir, transform)
+        train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+
+        validation_dataset = GITractDataset(validation_image_dir, validation_mask_dir, transform)
+        validation_dataloader = DataLoader(validation_dataset, batch_size=16, shuffle=False)
+
+        now = datetime.now()
+        tag = now.strftime('%Y%m%d%H%M')
+
+        model = UNet(num_classes=3)
+        model = model.to(device)
+
+        criterion = nn.MSELoss()
+
+        optimizer = adamw.AdamW(model.parameters(), lr=0.0001)
+
+        num_epochs = 4  # Define the number of epochs
+        for epoch in range(num_epochs):
+            train(model, train_dataloader, optimizer, criterion, epoch, tag, output_path)
+            time.sleep(60)
+            validate(model, validation_dataloader, criterion, epoch, tag, output_path)
+            time.sleep(60)
+
+def original_main():
+
     args = parse_args()
 
     train_image_dir = args.train_image_dir
@@ -171,7 +227,7 @@ def main():
     # optimizer = sgd.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.1, patience=2, threshold=.0001, verbose=True)
 
-    num_epochs = 5  # Define the number of epochs
+    num_epochs = 4  # Define the number of epochs
     for epoch in range(num_epochs):
         train(model, train_dataloader, optimizer, criterion, epoch, tag, output_path)
         time.sleep(60)
