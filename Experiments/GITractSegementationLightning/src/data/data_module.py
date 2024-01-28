@@ -17,8 +17,8 @@ from torchvision.transforms import functional as F
 
 # Local application/library specific imports
 from common import DataType, MriPlane, TrainingStage, config
-from csv_data_parser import parse_csv_into_record_data
-from generate_working_mri_images import generate_axial_mri, generate_coronal_from_axial_mri, generate_sagittal_from_axial_mri
+from .csv_data_parser import parse_csv_into_record_data
+from .generate_working_mri_images import generate_axial_mri, generate_coronal_from_axial_mri, generate_sagittal_from_axial_mri
 
 # This is in the data directory and contains flags
 # that let us know what stages of setup have already been 
@@ -50,30 +50,31 @@ TEMP_FOLDER = 'temp'
 
 class MriDataModule(pl.LightningDataModule):
     
-    def __init__(self, data_dir, zip_file):
+    def __init__(self, data_dir, zip_file, mri_plane):
         super().__init__()
 
         self.data_dir = data_dir
         self.setup_log = os.path.join(self.data_dir, SETUP_LOG_DIR)
         self.working_dir = os.path.join(self.data_dir, TEMP_FOLDER)
 
-        self.axial_train_images = os.path.join(self.data_dir, TrainingStage.TRAIN, MriPlane.AXIAL, DataType.IMAGES)
-        self.axial_train_masks = os.path.join(self.data_dir, TrainingStage.TRAIN, MriPlane.AXIAL, DataType.MASKS)
+        self.axial_train_images = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.IMAGES)
+        self.axial_train_masks = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.MASKS)
 
-        self.axial_validation_images = os.path.join(self.data_dir, TrainingStage.VALIDATION, MriPlane.AXIAL, DataType.IMAGES)
-        self.axial_validation_masks = os.path.join(self.data_dir, TrainingStage.VALIDATION, MriPlane.AXIAL, DataType.MASKS)
+        self.axial_validation_images = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.IMAGES)
+        self.axial_validation_masks = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.MASKS)
 
-        self.axial_test_images = os.path.join(self.data_dir, TrainingStage.TEST, MriPlane.AXIAL, DataType.IMAGES)
-        self.axial_test_masks = os.path.join(self.data_dir, TrainingStage.TEST, MriPlane.AXIAL, DataType.MASKS)
+        self.axial_test_images = os.path.join(self.data_dir, TrainingStage.TEST, mri_plane, DataType.IMAGES)
+        self.axial_test_masks = os.path.join(self.data_dir, TrainingStage.TEST, mri_plane, DataType.MASKS)
 
-        self.axial_minitest_images = os.path.join(self.data_dir, TrainingStage.MINITEST, MriPlane.AXIAL, DataType.IMAGES)
-        self.axial_minitest_masks = os.path.join(self.data_dir, TrainingStage.MINITEST, MriPlane.AXIAL, DataType.MASKS)
+        self.axial_minitest_images = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.IMAGES)
+        self.axial_minitest_masks = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.MASKS)
 
         self.zip_file = zip_file
         
     def prepare_data(self):
         # Called on single GPU
-        
+        # return 
+    
         # This will check to see if a specific step has already run
         # and run the necessary steps if it has not. 
         os.makedirs(self.data_dir, exist_ok=True)

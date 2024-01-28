@@ -5,7 +5,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
 from common.consts import LossMetric
 
-from data import MriDataModule
+from data.data_module import MriDataModule
 from model import UNet
 from common import config
 

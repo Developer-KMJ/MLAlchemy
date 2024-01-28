@@ -20,7 +20,7 @@ from common import LossMetric, TrainingStage, config
 
 
 class UNet(pl.LightningModule):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, tag = None):
         super(UNet, self).__init__()
 
         self.criterion = nn.MSELoss()
@@ -28,8 +28,12 @@ class UNet(pl.LightningModule):
         self.hausdorff = HausdorffERLoss3D()
 
         self.num_classes = num_classes
-        self.write_intermediate = False        
-        self.tag = datetime.now().strftime('%Y%m%d%H%M')
+        self.write_intermediate = False 
+             
+        if tag is None:  
+            self.tag = datetime.now().strftime('%Y%m%d%H%M')
+        else:
+            self.tag = tag
         
       # Encoder
         # In the encoder, convolutional layers with the Conv2d function are used to extract features from the input image. 

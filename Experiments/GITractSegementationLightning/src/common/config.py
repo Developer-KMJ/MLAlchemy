@@ -1,7 +1,7 @@
 # Raw Data File locations
-DATA_DIR = '/media/kevin/A2CA6025CA5FF44F/MRIProject/data/processed'
-RAW_DATA = '/media/kevin/A2CA6025CA5FF44F/MRIProject/data/raw'
-ZIP_FILE = '/media/kevin/A2CA6025CA5FF44F/MRIProject/data/raw/uw-madison-gi-tract-image-segmentation.zip'
+DATA_DIR = '/home/kevin/Documents/MRIProject-Working/data/processed'
+RAW_DATA = '/home/kevin/Documents/MRIProject-Working/data/raw'
+ZIP_FILE = '/home/kevin/Documents/MRIProject-Working/data/raw/uw-madison-gi-tract-image-segmentation.zip'
 
 # Info needed for data processing.
 
@@ -18,10 +18,7 @@ VAL_SIZE = 0.2
 TEST_SIZE = 0.1
 
 # location for training results. 
-OUT_DIR = '/media/kevin/A2CA6025CA5FF44F/MRIProject/out'
-# CHECKPOINT_DIR = '/home/kevin/Documents/MRIProject/out/checkpoints'
-# LOGGER_DIR = '/home/kevin/Documents/MRIProject/logs'
-# INTERMEDIATE_OUT_DIR = '/home/kevin/Documents/MRIProject/intermediate'
+OUT_DIR = '/home/kevin/Documents/MRIProject-Working/out'
 
 # Training Defaults
 TRAIN_BATCH_SIZE = 16

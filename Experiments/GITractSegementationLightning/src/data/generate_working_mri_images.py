@@ -10,8 +10,8 @@ import numpy as np
 
 # Local application/library specific imports
 from common import MriPlane
-from csv_data_parser import RecordData, parse_csv_into_record_data
-from raw_image_processor import (convert_original_image_to_24bit_48bit, 
+from .csv_data_parser import RecordData, parse_csv_into_record_data
+from .raw_image_processor import (convert_original_image_to_24bit_48bit, 
                                  generate_segmented_image_24bit_48bit, 
                                  normalize_pixel_size, 
                                  reshape_image)
@@ -50,9 +50,9 @@ def main():
 
     # Walk through data by Case Number, as we will need to generate images using all the 
     # slices in that directory.
-    case_numbers = sorted(set(record.case for record in data_records()))
+    case_numbers = sorted(set(record.case for record in data_records.values()))
     for case_number in case_numbers:
-        days = sorted(set({record.day for record in data_records() if record.case == case_number}))
+        days = sorted(set({record.day for record in data_records.values() if record.case == case_number}))
         for day in days:
 
             # case_records = [record for record in data_recordss() if record.case == case_number and record.day == day]
@@ -112,6 +112,7 @@ def generate_axial_mri(axial_slices_path : str,
                        day: str,
                        data_records : [RecordData], target_shape_width: int, target_shape_height: int):
    
+    
     case_day_path = os.path.join(axial_slices_path, f'case{case}', f'case{case}_day{day}', 'scans')
     img_max, img_min, _, _ = _get_normalization_values(case_day_path)   
 
