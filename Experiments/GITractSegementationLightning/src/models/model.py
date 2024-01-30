@@ -5,19 +5,18 @@ from typing import Any, Tuple
 
 # Related third party imports
 import cv2
-from kornia.losses import HausdorffERLoss3D
 import numpy as np
+from scipy.spatial.distance import cdist
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.optim import adamw
+from kornia.losses import HausdorffERLoss3D, HausdorffERLoss
 from torchmetrics import Dice
 from torchvision.transforms import functional as TF
 
 # Local application/library specific imports
 from common import LossMetric, TrainingStage, config
-
 
 class UNet(pl.LightningModule):
     def __init__(self, num_classes, tag = None):
@@ -74,10 +73,10 @@ class UNet(pl.LightningModule):
         # Output layer
         self.outconv = nn.Conv2d(64, num_classes, kernel_size=1, padding='same')
         
-        for p in self.parameters():
-            print(f'min:{p.min()}')
-            print(f'max(p):{p.max()}')
-            # torch.nn.init.uniform_(p, 0, 1)
+        # for p in self.parameters():
+        #     print(f'min:{p.min()}')
+        #     print(f'max(p):{p.max()}')
+        #     # torch.nn.init.uniform_(p, 0, 1)
 
     def set_write_intermediate(self, write_intermediate):
         self.write_intermediate = write_intermediate
@@ -138,7 +137,7 @@ class UNet(pl.LightningModule):
         return self._common_step(batch, batch_idx, LossMetric.VAL_LOSS, TrainingStage.VALIDATION, self.write_intermediate)
     
     def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor, str, str], batch_idx: int) -> torch.Tensor:
-        return self._dice_hausdorff_step(batch, batch_idx, LossMetric.VAL_LOSS, TrainingStage.MINITEST, self.write_intermediate)
+        return self._dice_hausdorff_step(batch, batch_idx, LossMetric.VAL_LOSS, TrainingStage.VALIDATION, self.write_intermediate)
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
@@ -194,35 +193,17 @@ class UNet(pl.LightningModule):
                     original_filename = os.path.basename(image_paths[j])
                     out_filename = os.path.join(epoch_path, f'{self.current_epoch}_{batch_idx}_{original_filename}')
                 
-                    # filename = out_filename.replace('.png', '_orig.png')
-                    # path = os.path.join(f'{epoch_path}', filename)
-                    # orig = inputs[0].to('cpu').squeeze().permute(1, 2, 0)
-                    # orig = orig.detach().numpy() * 255                    
-                    # cv2.imwrite(path, orig)
-
-                    # filename = out_filename.replace('.png', '_mask.png')
-                    # path = os.path.join(f'{epoch_path}', filename)
-                    # target = labels[0].to('cpu').squeeze().permute(1, 2, 0)
-                    # target = target.detach().numpy() * 255
-                    # cv2.imwrite(path, target)
-                
-                    # filename = out_filename.replace('.png', '_target.png')
-                    # path = os.path.join(f'{epoch_path}', filename)
-                    # img = outputs[0].to('cpu').squeeze().permute(1, 2, 0)
-                    # img = img.detach().numpy() * 255
-                    # print(f'Image: {img.min()}->{img.max()}')
-                    # cv2.imwrite(filename, img)
-
-                
                     predicted_out_path = out_filename.replace('.png', '_predicted.png')    
                     predicted_mask_write = outputs[j].detach().cpu().numpy()
                     predicted_mask_write = np.transpose(predicted_mask_write, (1, 2, 0))
+                    predicted_mask_write = np.clip(predicted_mask_write, 0, 1)
                     predicted_mask_write = (predicted_mask_write * 255)
                     cv2.imwrite(predicted_out_path, predicted_mask_write)
                     
                     actual_out_path = out_filename.replace('.png', '_actual_mask.png')    
                     actual_mask_write = cropped_labels[j, :, :, :].detach().cpu().numpy()
                     actual_mask_write = np.transpose(actual_mask_write, (1, 2, 0))
+                    actual_mask_write = np.clip(actual_mask_write, 0, 1)
                     actual_mask_write = (actual_mask_write * 255)
                     cv2.imwrite(actual_out_path, actual_mask_write)
                     
@@ -263,31 +244,30 @@ class UNet(pl.LightningModule):
         slice = 0
         for i, minibatch in enumerate(minibatches):
             predicted_masks = self(minibatch)
-
+            predicted_masks = torch.clamp(predicted_masks, 0, 1)
+            
             if write_intermediate:
                 case_name = os.path.basename(case_dirs[0])
-                working_images_path = os.path.join(config.OUT_DIR, "working_images", self.tag, stage)
-                replacement_text = os.path.join(working_images_path, stage, self.tag, f"Epoch{self.current_epoch}")
-                case_dir_path = case_dirs[0].replace(stage, replacement_text)
-                os.makedirs(case_dir_path, exist_ok=True)
+                working_images_path = os.path.join(config.OUT_DIR, "_Test_Intermediate", self.tag, case_name)
+                os.makedirs(working_images_path, exist_ok=True)
                 for j in range(minibatch.shape[0]):
                     predicted_mask_write = predicted_masks[j].detach().cpu().numpy()
                     predicted_mask_write = np.transpose(predicted_mask_write, (1, 2, 0))
-                    predicted_mask_write = (predicted_mask_write * 255).astype(dtype=np.uint8)
+                    predicted_mask_write = (predicted_mask_write * 255)
                     filename = case_name + f'_slice_{str(slice).zfill(4)}_predicted.png'
-                    cv2.imwrite(os.path.join(case_dir_path, filename), predicted_mask_write)
+                    cv2.imwrite(os.path.join(working_images_path, filename), predicted_mask_write)
                     
                     actual_mask_write = actual_mask[:, slice, :, :].detach().cpu().numpy()
                     actual_mask_write = np.transpose(actual_mask_write, (1, 2, 0))
-                    actual_mask_write = (actual_mask_write * 255).astype(dtype=np.uint8)
+                    actual_mask_write = (actual_mask_write * 255)
                     filename = case_name + f'_slice_{str(slice).zfill(4)}_actual_mask.png'
-                    cv2.imwrite(os.path.join(case_dir_path, filename), actual_mask_write)
+                    cv2.imwrite(os.path.join(working_images_path, filename), actual_mask_write)
                     
                     actual_image_write = minibatch[j].detach().cpu().numpy()
                     actual_image_write = np.transpose(actual_image_write, (1, 2, 0))
-                    actual_image_write = (actual_image_write * 255).astype(dtype=np.uint8)
+                    actual_image_write = (actual_image_write * 255)
                     filename = case_name + f'_slice_{str(slice).zfill(4)}_actual_image.png'
-                    cv2.imwrite(os.path.join(case_dir_path, filename), actual_image_write)
+                    cv2.imwrite(os.path.join(working_images_path, filename), actual_image_write)
                     slice += 1
           
             predicted_masks = TF.center_crop(predicted_masks, [inputs.shape[2], inputs.shape[3]])             
@@ -309,33 +289,38 @@ class UNet(pl.LightningModule):
         actual_masks_split = [torch.squeeze(mask, dim=0) for mask in actual_masks_split]
 
         mse_loss_accumulator = 0
-        dice_loss_accumulator = 0
-        hausdorff_loss_accumulator = 0
+        dice_accumulator = 0
+        hausdorff_accumulator = 0
 
         for predicted_mask, actual_mask in zip(final_predicted_masks, actual_masks_split):
+            # predicted_mask = actual_mask.to(dtype=torch.float32)   
+            # Temp to that the losses are calcualted correctly when it's 100%
+            # predicted_mask = actual_mask.to(dtype=torch.float32)
             mse_loss_accumulator += self.criterion(predicted_mask, actual_mask).item()
         
             #  Dice is the score, so we need 1 - dice to get loss
-            dice_loss_accumulator += 1 - self.dice(predicted_mask, actual_mask).item() 
-        
+            # dice_loss_accumulator += 1 - self.dice(predicted_mask, actual_mask).item() 
+            dice_similarity_score = self.dice(predicted_mask, actual_mask).item()
+            dice_accumulator += dice_similarity_score
             
-            hausdorff_loss_accumulator += self._calculate_hausdorff(predicted_mask, actual_mask)
+            hausdorff_similarity_distance_score = self._hausdorff(predicted_mask, actual_mask)
+            hausdorff_accumulator += hausdorff_similarity_distance_score
             
         average_mse_loss = mse_loss_accumulator / 3
-        average_dice_loss = dice_loss_accumulator / 3
-        average_hausdorff_loss = hausdorff_loss_accumulator / 3
-        mixed_loss = (0.6 * average_hausdorff_loss) + (0.4 * average_dice_loss)
+        average_dice_similarity = dice_accumulator / 3
+        average_inverse_distance = hausdorff_accumulator / 3
+        mixed_score = (0.6 * average_inverse_distance) + (0.4 * average_dice_similarity)
 
         values = {
             LossMetric.MSE_LOSS: average_mse_loss, 
-            LossMetric.DICE_LOSS: average_dice_loss, 
-            LossMetric.HAUSDORFF_LOSS: average_hausdorff_loss,
-            LossMetric.MIXED_LOSS: mixed_loss}
+            LossMetric.DICE_LOSS: 1 - average_dice_similarity,
+            LossMetric.HAUSDORFF_LOSS: 1 - average_inverse_distance,
+            LossMetric.MIXED_LOSS: mixed_score}
         self.log_dict(values,  on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        return average_dice_loss
+        return 1 - average_inverse_distance
 
-    def _calculate_hausdorff(self, predicted_mask_3d, actual_mask_3d):
+    def _hausdorff(self, predicted_mask_3d, actual_mask_3d):
         # normalize loss_score by dividing by width * height
         # the depth for each slice is 1, so we don't need to divide by that.
         
@@ -344,13 +329,68 @@ class UNet(pl.LightningModule):
         # The measure is computed by computing the Hausdorff distance between the input geometries, and then normalizing 
         # this by dividing it by the diagonal distance across the envelope of the combined geometries.
         
-        # Need B, C, D, W, H
-        predicted = predicted_mask_3d.unsqueeze(0).unsqueeze(0)
-        actual = actual_mask_3d.unsqueeze(0).unsqueeze(0)
-        loss_score = self.hausdorff(predicted, actual)
-        diagonal = np.sqrt(actual.shape[3]**2 + actual.shape[4]**2)
-        normalized_loss_score = loss_score.item() / diagonal
+        all_predicted_points = np.empty((0, 3))
+        all_actual_points = np.empty((0, 3))
+        for i in range(0, predicted_mask_3d.shape[0]):
+            
+            
+            predicted = predicted_mask_3d[i, :, :] # .unsqueeze(0).unsqueeze(0)
+            
+            np_predicted = predicted.detach().cpu().numpy()
+            np_predicted = np.clip(np_predicted, 0, 1)
+            np_predicted = (np_predicted * 255).astype(np.uint8)
+            edges = cv2.Canny(np_predicted,100,200)
+            y_coords, x_coords = np.where(edges > 0)
+            z_coords = np.full_like(x_coords, i)
+            predicted_points = np.column_stack((x_coords, y_coords, z_coords))
+            all_predicted_points = np.concatenate((all_predicted_points, predicted_points))
+         
+            # For debugging   
+            # out_file = os.path.join(canny_out, f"canny_predicted{i}.png")
+            # os.makedirs(os.path.dirname(out_file), exist_ok=True)
+            # cv2.imwrite(out_file, edges)
+            
+            actual = actual_mask_3d[i, :, :] # .unsqueeze(0).unsqueeze(0)
+            np_actual = actual.detach().cpu().numpy()
+            np_actual = np.clip(np_actual, 0, 1)
+            np_actual = (np_actual * 255).astype(np.uint8)
+            edges = cv2.Canny(np_actual,100,200)
+            y_coords, x_coords = np.where(edges > 0)
+            z_coords = np.full_like(x_coords, i)
+            actual_points = np.column_stack((x_coords, y_coords, z_coords))
+            all_actual_points = np.concatenate((all_actual_points, actual_points))
+            
+            # For debugging
+            # out_file = os.path.join(canny_out, f"canny_actual{i}.png")
+            # cv2.imwrite(out_file, edges)
+            
+        dist = self.hausdorff_distance_3d(all_predicted_points, all_actual_points)
         
-        # The kornia docs say this is a dissimalarty measure, but the values are similarity measures.
-        return 1 - normalized_loss_score  
+        if dist == np.inf:
+            return 0
+        diagonal = np.sqrt(actual.shape[0]**2 + actual.shape[1]**2)
+        normalized_score = dist / diagonal
+        
+        return 1 - normalized_score  
 
+    def hausdorff_distance_3d(self, setA, setB):
+        """
+        Compute the Hausdorff Distance between two 3D point sets.
+
+        :param setA: numpy.ndarray of shape (n_points, 3)
+        :param setB: numpy.ndarray of shape (m_points, 3)
+        :return: Hausdorff distance as a float
+        """
+        # Compute pairwise distance matrix between points in set A and set B
+        distances = cdist(setA, setB, 'euclidean')
+
+        if (len(setA) == 0 or len(setB) == 0):
+            return np.inf
+
+        # Find the single closest point in set B for each point in set A, and vice versa
+        min_dist_to_B = distances.min(axis=1)
+        min_dist_to_A = distances.min(axis=0)
+
+        # The Hausdorff distance is the max of these minimum distances
+        hausdorff_dist = max(np.max(min_dist_to_B), np.max(min_dist_to_A))
+        return hausdorff_dist
