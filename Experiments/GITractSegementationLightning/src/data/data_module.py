@@ -9,6 +9,7 @@ import zipfile
 import cv2
 import numpy as np
 import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
@@ -17,8 +18,9 @@ from torchvision.transforms import functional as F
 
 # Local application/library specific imports
 from common import DataType, MriPlane, TrainingStage, config
-from .csv_data_parser import parse_csv_into_record_data
-from .generate_working_mri_images import generate_axial_mri, generate_coronal_from_axial_mri, generate_sagittal_from_axial_mri
+from data.images.image_normalization import get_image_normalization_values_records
+from .mri_images.csv_data_parser import parse_csv_into_record_data
+from data.mri_images.mri_image_generation import generate_axial_mri
 
 # This is in the data directory and contains flags
 # that let us know what stages of setup have already been 
@@ -40,7 +42,6 @@ TEMP_FOLDER = 'temp'
 #       that adjust sizes, 16bit gray to 8bit, generating masks,etc. 
 # 6. Puts those new files into the data directory divided by:
 #       train, validation, and test
-#       then by axial, coronal, sagittal
 #       then by images or masks. 
 #       then under each the case0_day0
 #    
@@ -57,17 +58,17 @@ class MriDataModule(pl.LightningDataModule):
         self.setup_log = os.path.join(self.data_dir, SETUP_LOG_DIR)
         self.working_dir = os.path.join(self.data_dir, TEMP_FOLDER)
 
-        self.axial_train_images = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.IMAGES)
-        self.axial_train_masks = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.MASKS)
+        self.train_images = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.IMAGES)
+        self.train_masks = os.path.join(self.data_dir, TrainingStage.TRAIN, mri_plane, DataType.MASKS)
 
-        self.axial_validation_images = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.IMAGES)
-        self.axial_validation_masks = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.MASKS)
+        self.validation_images = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.IMAGES)
+        self.validation_masks = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.MASKS)
 
-        self.axial_test_images = os.path.join(self.data_dir, TrainingStage.TEST, mri_plane, DataType.IMAGES)
-        self.axial_test_masks = os.path.join(self.data_dir, TrainingStage.TEST, mri_plane, DataType.MASKS)
+        self.test_images = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.IMAGES)
+        self.test_masks = os.path.join(self.data_dir, TrainingStage.VALIDATION, mri_plane, DataType.MASKS)
 
-        self.axial_minitest_images = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.IMAGES)
-        self.axial_minitest_masks = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.MASKS)
+        self.minitest_images = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.IMAGES)
+        self.minitest_masks = os.path.join(self.data_dir, TrainingStage.MINITEST, mri_plane, DataType.MASKS)
 
         self.zip_file = zip_file
         
@@ -105,36 +106,18 @@ class MriDataModule(pl.LightningDataModule):
             train_set, validation_set, test_set = \
                 self._train_validation_test_split(data_records, config.TRAIN_SIZE, config.VAL_SIZE)
 
-            self._prepare_axial_mri_data_mt(train_set, TrainingStage.TRAIN, max_width, max_height)
-            self._prepare_axial_mri_data_mt(validation_set, TrainingStage.VALIDATION, max_width, max_height)
-            self._prepare_axial_mri_data_mt(test_set, TrainingStage.TEST, max_width, max_height)
+            # In this case we are splitting the data we have into three sets, train, validation, and test. So we only want to calculate the 
+            # normalization values on the test images, after we have split them so that we don't leak information that could make
+            # the validation or test results appear to be better than they are. 
+            min_val, max_val, mean, original_stddev, original_variance, mean_scaled, scaled_stddev, scaled_variance = get_image_normalization_values_records(train_set)
+            
+
+            self._prepare_axial_mri_data(train_set, TrainingStage.TRAIN, max_width, max_height, min_val, max_val, mean_scaled, scaled_stddev)
+            self._prepare_axial_mri_data(validation_set, TrainingStage.VALIDATION, max_width, max_height, min_val, max_val, mean_scaled, scaled_stddev)
+            self._prepare_axial_mri_data(test_set, TrainingStage.TEST, max_width, max_height, min_val, max_val, mean_scaled, scaled_stddev)
 
             print('axial data processed.')
             self._stage_executed_successfully('preprocess_axial_data')
-
-        if (not self._has_stage_executed('preprocess_coronal_data')):
-            print('about to generate coronal data from axial.')
-            
-            # Generate the coronal MRI images for the specific case and day,
-            # using the axial images we just generated.
-            self._generate_coronal_from_axial_mri_mt(TrainingStage.TRAIN)
-            self._generate_coronal_from_axial_mri_mt(TrainingStage.VALIDATION)
-            self._generate_coronal_from_axial_mri_mt(TrainingStage.TEST)
-                
-            print('coronal data processed.')
-            self._stage_executed_successfully('preprocess_coronal_data')
-
-        if (not self._has_stage_executed('preprocess_sagittal_data')):
-            print('about to preprocess sagittal data.')
-
-            # Generate the sagittal MRI images for the specific case and day,
-            # using the axial images we just generated.
-            self._generate_sagittal_from_axial_mri_mt(TrainingStage.TRAIN)
-            self._generate_sagittal_from_axial_mri_mt(TrainingStage.VALIDATION)
-            self._generate_sagittal_from_axial_mri_mt(TrainingStage.TEST)
-                
-            print('sagittal data processed.')
-            self._stage_executed_successfully('preprocess_sagittal_data')
 
     # def setup(self, stage=None):
     #     # Called on every GPU
@@ -143,34 +126,30 @@ class MriDataModule(pl.LightningDataModule):
     ''' Train dataloader is used for training using a mixed batch of images from different cases and days.'''
     def train_dataloader(self):
         return self._get_instance_dataloader(
-            self.axial_train_images,
-            self.axial_train_masks,
+            self.train_images,
+            self.train_masks,
             shuffle=True)
         
     def val_dataloader(self):
         return self._get_instance_dataloader(
-            self.axial_validation_images, 
-            self.axial_validation_masks)
+            self.validation_images, 
+            self.validation_masks)
     
     def test_dataloader(self):
-        return self._get_instance_dataloader(
-            self.axial_train_images,
-            self.axial_train_masks,
-            shuffle=True)
-        # return self._get_grouped_dataloader(self.axial_test_images, self.axial_test_masks)
+        #return self._get_instance_dataloader(self.axial_train_images, self.axial_train_masks, shuffle=True)
+        return self._get_grouped_dataloader(self.test_images, self.test_masks)
 
-    # def predict_dataloader(self):
-    #     return self._get_grouped_dataloader(self.axial_test_images, self.axial_test_masks)
-
-    # def minitest_dataloader(self):
-    #     return self._get_grouped_dataloader(self.axial_minitest_images, self.axial_minitest_masks)
+    def predict_dataloader(self) -> EVAL_DATALOADERS:
+        return self._get_grouped_dataloader(self.test_images, self.test_masks)
 
     def _get_instance_dataloader(self, image_dir, mask_dir, shuffle=False):
-        transform = transforms.Compose([transforms.ToTensor()])
+        # Images were transformed in the original import
+        # transform = transforms.Compose([transforms.ToTensor(),
+        #                                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+        #                                                     std=[0.229, 0.224, 0.225])])
         
         instance_dataset = GITractImageInstanceDataset(image_dir, 
-                                                       mask_dir, 
-                                                       transform)
+                                                       mask_dir)
         
         instance_dataloader = DataLoader(instance_dataset, 
                                       batch_size=16, 
@@ -246,7 +225,16 @@ class MriDataModule(pl.LightningDataModule):
 
         return train_set, valid_set, test_set
 
-    def _prepare_axial_mri_data_mt(self, data_records, subdirectory_name, max_width, max_height):
+    def _prepare_axial_mri_data(self, 
+                                   data_records, 
+                                   subdirectory_name, 
+                                   max_width, 
+                                   max_height,
+                                   min_value,
+                                   max_value, 
+                                   post_scaled_mean,
+                                   post_scaled_stdev,
+                                   multithreaded=True):
 
         # Create directories that the image will ultimately be stored in.
         axial_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.AXIAL)
@@ -268,114 +256,46 @@ class MriDataModule(pl.LightningDataModule):
                 case_axial_image_path = os.path.join(axial_image_path, f'case{case_number}_day{day}')
                 case_axial_mask_path = os.path.join(axial_mask_path, f'case{case_number}_day{day}')
 
-                # Add the task to the list
-                tasks.append((working_dir, case_axial_image_path, case_axial_mask_path, case_number, day, data_records, max_width, max_height))
-
-        # Create a pool of workers and apply generate_axial_mri to each task
-        with mp.Pool(mp.cpu_count()) as pool:
-            pool.starmap(generate_axial_mri, tasks)
-
-
-    def _prepare_axial_mri_data_st(self, data_records, subdirectory_name, max_width, max_height):
-
-        # Create directories that the image will ultimately be stored in.
-        axial_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.AXIAL)
-        os.makedirs(axial_path, exist_ok=True)
-
-        axial_image_path = os.path.join(axial_path, DataType.IMAGES)
-        os.makedirs(axial_image_path, exist_ok=True)
-
-        axial_mask_path = os.path.join(axial_path, DataType.MASKS)
-        os.makedirs(axial_mask_path, exist_ok=True)
-
-        case_numbers = sorted(set(record.case for record in data_records.values()))
-        working_dir = os.path.join(self.data_dir, TEMP_FOLDER, config.IMAGE_FOLDER_IN_ZIP)
-        for case_number in case_numbers:
-            days = sorted(set({record.day for record in data_records.values() if record.case == case_number}))
-            for day in days:
-                case_axial_image_path = os.path.join(axial_image_path, f'case{case_number}_day{day}')
-                case_axial_mask_path = os.path.join(axial_mask_path, f'case{case_number}_day{day}')
-
-                # This step converts the original images into the 24bit format, as well as converts the 
-                # rle in the csv files into a three channel mask image.
-                generate_axial_mri(working_dir, case_axial_image_path, case_axial_mask_path, case_number, day,
-                            data_records, max_width, max_height)
-
-    def _generate_coronal_from_axial_mri_mt(self, subdirectory_name):
-        
-        axial_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.AXIAL)
-        axial_image_path = os.path.join(axial_path, DataType.IMAGES)
-        axial_mask_path = os.path.join(axial_path, DataType.MASKS)
-        
-        coronal_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.CORONAL)
-        os.makedirs(coronal_path, exist_ok=True)
-
-        coronal_image_path = os.path.join(coronal_path, DataType.IMAGES)
-        os.makedirs(coronal_image_path, exist_ok=True)
-
-        coronal_mask_path = os.path.join(coronal_path, DataType.MASKS)
-        os.makedirs(coronal_mask_path, exist_ok=True)
-
-        tasks = [(name, axial_image_path, axial_mask_path, coronal_image_path, coronal_mask_path, MriPlane.CORONAL) 
-                 for name in os.listdir(axial_image_path) 
-                 if os.path.isdir(os.path.join(axial_image_path, name))]
-
-        # Create a pool of workers and apply process_case to each task
-        with mp.Pool(mp.cpu_count())  as pool:
-            pool.starmap(_generate_from_axial_mri_process_case, tasks)
-
-    def _generate_sagittal_from_axial_mri_mt(self, subdirectory_name):
-        
-        axial_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.AXIAL)
-        axial_image_path = os.path.join(axial_path, DataType.IMAGES)
-        axial_mask_path = os.path.join(axial_path, DataType.MASKS)
-        
-        sagittal_path = os.path.join(self.data_dir, subdirectory_name, MriPlane.SAGITTAL)
-        os.makedirs(sagittal_path, exist_ok=True)
-
-        sagittal_image_path = os.path.join(sagittal_path, DataType.IMAGES)
-        os.makedirs(sagittal_image_path, exist_ok=True)
-
-        sagittal_mask_path = os.path.join(sagittal_path, DataType.MASKS)
-        os.makedirs(sagittal_mask_path, exist_ok=True)
-
-        tasks = [(name, axial_image_path, axial_mask_path, sagittal_image_path, sagittal_mask_path, MriPlane.SAGITTAL) 
-                 for name in os.listdir(axial_image_path) 
-                 if os.path.isdir(os.path.join(axial_image_path, name))]
-
-        # Create a pool of workers and apply process_case to each task
-        with mp.Pool(mp.cpu_count())  as pool:
-            pool.starmap(_generate_from_axial_mri_process_case, tasks)
-
-
-def _generate_from_axial_mri_process_case(name, 
-                                          axial_image_path, 
-                                          axial_mask_path, 
-                                          output_image_path, 
-                                          output_mask_path,
-                                          process_type):
-    parts = name.split('_')
-    case_number = int(parts[0][4:])  # Remove 'case' and convert to int
-    day = int(parts[1][3:])  # Remove 'day' and convert to int
-    case_axial_image_path = os.path.join(axial_image_path, name)
-    case_axial_mask_path = os.path.join(axial_mask_path, name)
-    case_output_image_path = os.path.join(output_image_path, f'case{case_number}_day{day}')
-    case_output_mask_path = os.path.join(output_mask_path, f'case{case_number}_day{day}')
-    
-    if process_type == MriPlane.CORONAL:
-        generate_coronal_from_axial_mri(case_axial_image_path, case_output_image_path, case_number, day)
-        generate_coronal_from_axial_mri(case_axial_mask_path, case_output_mask_path, case_number, day)
-    elif process_type == MriPlane.SAGITTAL:
-        generate_sagittal_from_axial_mri(case_axial_image_path, case_output_image_path, case_number, day)
-        generate_sagittal_from_axial_mri(case_axial_mask_path, case_output_mask_path, case_number, day)
-    else:
-        raise ValueError(f"Invalid process_type: {process_type}")
-
-
+                if multithreaded:
+                    # Add the task to the list
+                    tasks.append((
+                        case_axial_image_path, 
+                        case_axial_mask_path, 
+                        case_number, 
+                        day, 
+                        data_records, 
+                        max_width, 
+                        max_height,  
+                        min_value,
+                        max_value, 
+                        post_scaled_mean,
+                        post_scaled_stdev))
+                    
+                   
+                else:
+                    # This step converts the original images into the 24bit format, as well as converts the 
+                    # rle in the csv files into a three channel mask image.
+                    generate_axial_mri(
+                        case_axial_image_path, 
+                        case_axial_mask_path, 
+                        case_number, 
+                        day,
+                        data_records, 
+                        max_width, 
+                        max_height,
+                        min_value,
+                        max_value, 
+                        post_scaled_mean,
+                        post_scaled_stdev)
+                    
+        if multithreaded:
+            # Create a pool of workers and apply generate_axial_mri to each task
+            with mp.Pool(mp.cpu_count()) as pool:
+                pool.starmap(generate_axial_mri, tasks)
 ''' 
     For training, the images can be fed in as a batch 
     that crosses cases and days. For inference, the
-    images should be fed in as a batch that is all
+    images should be fed in as a batch that is alladd
     from the same case and day. 
 
     The GITractImageInstanceDataset class is for training.
@@ -388,7 +308,7 @@ class GITractImageInstanceDataset(Dataset):
         self.transform = transform
         self.images = sorted([os.path.join(dirpath, f)
                        for dirpath, dirnames, files in os.walk(image_dir)
-                       for f in fnmatch.filter(files, '*.png')])
+                       for f in fnmatch.filter(files, '*.npy')])
 
     def __len__(self):
         return len(self.images)
@@ -396,15 +316,33 @@ class GITractImageInstanceDataset(Dataset):
     def __getitem__(self, idx):
 
         img_path = self.images[idx]
-        image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+        mask_path = img_path.replace(self.image_dir, self.mask_dir).replace('.npy', '.png')
+        
+        if (img_path.find('.npy') == -1):
+            image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+        else:
+            # Using numpy, we load 3 images (2.5 dimensions) 
+            # instead of an image with 3 channels.
+            lower = idx-1 if idx-1 >= 0 else 0
+            upper = idx+1 if idx+1 < len(self.images) else len(self.images)-1
+            
+            lower_channel = np.load(self.images[lower]).astype(np.float32)
+            middle_channel = np.load(self.images[idx]).astype(np.float32)
+            upper_channel = np.load(self.images[upper]).astype(np.float32)
+            
+            image = np.stack([lower_channel, middle_channel, upper_channel], axis=0)
+            # image = np.transpose(image, (1, 2, 0)) # Change to (H, W, C)
+            
+            
+        mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)    
+        mask = (mask / 255.0).astype(np.float32)
+        mask = np.transpose(mask, (2, 0, 1))
       
-        mask_path = img_path.replace(self.image_dir, self.mask_dir)
-        mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
+        # if self.transform:
+        #     if (img_path.find('.npy') == -1):
+        #         image = self.transform(image)
+        #     mask = self.transform(mask)
       
-        if self.transform:
-            image = self.transform(image)
-            mask = self.transform(mask)
-
         return image, mask, img_path, mask_path
     
 class GITractGroupedDataset(Dataset):

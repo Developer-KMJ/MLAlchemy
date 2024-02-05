@@ -11,7 +11,6 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from kornia.losses import HausdorffERLoss3D, HausdorffERLoss
 from torchmetrics import Dice
 from torchvision.transforms import functional as TF
 
@@ -24,7 +23,6 @@ class UNet(pl.LightningModule):
 
         self.criterion = nn.MSELoss()
         self.dice = Dice(threshold=0.6, average='micro')
-        self.hausdorff = HausdorffERLoss3D()
 
         self.num_classes = num_classes
         self.write_intermediate = False 
@@ -193,24 +191,29 @@ class UNet(pl.LightningModule):
                     original_filename = os.path.basename(image_paths[j])
                     out_filename = os.path.join(epoch_path, f'{self.current_epoch}_{batch_idx}_{original_filename}')
                 
+                    out_filename = out_filename.replace('.npy', '.png')    
                     predicted_out_path = out_filename.replace('.png', '_predicted.png')    
                     predicted_mask_write = outputs[j].detach().cpu().numpy()
                     predicted_mask_write = np.transpose(predicted_mask_write, (1, 2, 0))
                     predicted_mask_write = np.clip(predicted_mask_write, 0, 1)
-                    predicted_mask_write = (predicted_mask_write * 255)
+                    predicted_mask_write = (predicted_mask_write * 255).astype(np.uint8)
                     cv2.imwrite(predicted_out_path, predicted_mask_write)
                     
                     actual_out_path = out_filename.replace('.png', '_actual_mask.png')    
                     actual_mask_write = cropped_labels[j, :, :, :].detach().cpu().numpy()
                     actual_mask_write = np.transpose(actual_mask_write, (1, 2, 0))
                     actual_mask_write = np.clip(actual_mask_write, 0, 1)
-                    actual_mask_write = (actual_mask_write * 255)
+                    actual_mask_write = (actual_mask_write * 255).astype(np.uint8)
                     cv2.imwrite(actual_out_path, actual_mask_write)
                     
                     image_out_path = out_filename.replace('.png', '_actual_image.png')    
                     actual_image_write = inputs[j].detach().cpu().numpy()
+                    
+                    # Normalize between 0 and 1 for output. 
+                    actual_image_write = (actual_image_write - actual_image_write.min())/(actual_image_write.max() - actual_image_write.min())
+                    
                     actual_image_write = np.transpose(actual_image_write, (1, 2, 0))
-                    actual_image_write = (actual_image_write * 255)
+                    actual_image_write = (actual_image_write * 255).astype(np.uint8)
                     cv2.imwrite(image_out_path, actual_image_write)
                     
        

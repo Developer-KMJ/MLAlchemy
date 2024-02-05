@@ -8,7 +8,7 @@ from numpy import number
 class RecordData:
 
     label: str
-    full_path: str
+  #  full_path: str
     case: str
     day: str
     slice: str
@@ -20,7 +20,7 @@ class RecordData:
 
     def __init__(self, 
                  label: str = '', 
-                 full_path: str = '', 
+                 # full_path: str = '', 
                  case: str = '', 
                  day: str = '', 
                  slice: str = '', 
@@ -31,7 +31,7 @@ class RecordData:
                  organ_list: dict[str, str] = None):
         
         self.label = label
-        self.full_path = full_path
+       #  self.full_path = full_path
         self.case = case
         self.day = day
         self.slice = slice

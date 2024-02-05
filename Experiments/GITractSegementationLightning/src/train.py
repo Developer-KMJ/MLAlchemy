@@ -1,7 +1,8 @@
 import os
 import sys
-# Included due to the common dir being a sibling of the src dir
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from models.model import UNet
+
 
 
 # Related third party imports
@@ -12,10 +13,10 @@ from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
 
 # Local application/library specific imports
-from common import config, LossMetric
+from common import config, LossMetric, MriPlane
 from common.consts import MriPlane
 from data.data_module import MriDataModule
-from model import UNet
+
 
 
 def main():
@@ -23,7 +24,7 @@ def main():
     
     torch.set_float32_matmul_precision('medium')
     
-    planes = [MriPlane.CORONAL, MriPlane.SAGITTAL, MriPlane.AXIAL]
+    planes = [MriPlane.AXIAL] # [MriPlane.CORONAL, MriPlane.SAGITTAL, MriPlane.AXIAL]
     
     for plane in planes:
     
