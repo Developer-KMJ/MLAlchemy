@@ -1,0 +1,284 @@
+X:1000
+T:A Child this Day is Born
+R:March
+C:Trad. Sandys 1833
+O:England
+M:4/4
+L:1/8
+Q:1/4=140
+K:D
+A2|:"D"A2 d2 "A"c2 AB|c6 e2|"Bm"d2 c2 "G"dc B2|"A"A6 A2|
+"D"A2 D2 "G"B2 d2|"D"A3B "A7"A2 G2|"D"F2 d2 "A"F2 E2|"D"D6 A2:|
+
+X:1005
+T:Away in a Manger
+R:Waltz
+C:William J Kirkpatrick, 1895
+O:England
+M:3/4
+L:1/4
+Q:1/4=110
+K:G
+D|"G"GG "D7"A/B/|"G"GG B/c/|dd "Em"e|"Am"c2A/B/|"D"ccd|"G"BB G/B/|"A7"AEG|"D7"F2D|
+"G"GG "D7"A/B/|"G"GG B/c/|dd "Em"e|"Am"c2A/B/|"D"ccd|"G"BB G/B/|"Am"AE "D7"F|"G"G2|]
+
+X:3004
+T:Christmas is Coming
+R:March
+C:Trad.
+O:England
+M:2/2
+L:1/4
+Q:1/2=100
+K:D
+"D"d2 A>A|d d2 d|"G"ddcB|"A"A4|"D"d>D DE|FDFA|"G"B2 "A7"AG|"D"F4|
+"D"F>G FE|DdAF|"G"G2 "A"A2|"D"D4|F>G FE|DdAF|"A7"A2 c2|"D"d4|]
+
+X:4002
+T:Deck the Halls
+R:March
+C:Trad.
+O:Wales
+M:4/4
+L:1/8
+Q:1/4=160
+K:D
+"D"A3 G F2 E2|D2 E2 F2 D2|"A"EFGE "D"F3 E|"A"D2 C2 "D"D4:|
+"A"E3 F G2 E2|"D"F3 G "A"A2 E2|"D"FG A2 "Bm"Bc d2|"E7"c2 B2 "A"A4|
+"D"A3 G F2 E2|D2 E2 F2 D2|"G"BBBB "D"A3 G|"A"F2 E2 "D"D4|]
+
+X:6001
+T:First Nowell, The
+T:First Noel
+R:Waltz
+C:Trad. Ancient in 1833
+O:England
+M:3/4
+L:1/4
+Q:1/4=120
+K:D
+"A7"F/2E/2|"D"D3/2 E/F/G/|"A"A2 B/c/|"G"d c B|"D"A2 B/c/|"G"d c B|"A7"A B c|"D"d A "A7"G|"D"F2:|
+"A7"F/2E/2|"D"D3/2 E/F/G/|"F#m"A2 d/2c/2|"G"B2 B|"D"A3|"G"d c B|"A7"A B c|"D"d A "A7"G|"D"F2|]
+
+X:7003
+T:God Rest Ye Merry Gentlemen
+R:March
+C:Trad.
+O:England
+M:4/4
+L:1/4
+Q:1/4=150
+K:G
+E|"Em" E B B  A| G F E  D|"C" E F G A|"B7" B3 E|
+"Em" E B B  A| G F  E D|"C" E F G A|"B" B2 z B|
+"Am" c A B c|"G" d e B  A|"Em" G E F G|"D" A2  G A|
+"G" B2 c B|"B7"B A G  F|"Em" E2 G/F/ E|"D" A2 G A|"G" B c d  e|"B" B A G  F|"Em" E3|]
+
+X:7004
+T:Good King Wenceslas
+R:March
+C:Trad. - Piae Cantiones, 1582
+O:Sweden
+M:4/4
+L:1/4
+Q:1/4=180
+K:G
+"G"G G G A|G G D2|"C"E D "D7"E F|"G"G2 G2:|
+"G"d c B A|"Em"B A G2|"C"E D "D7"E F|"G"G2 G2|
+"D"D D E F|"G"G G "D7"A2|"G"d c B A|"Em"G2 "C"c2|"G"G4|]
+
+X:8001
+T:Hark The Herald Angels Sing
+R:March
+C:Felix Mendelssohn, 1840
+O:Germany
+M:4/4
+L:1/4
+Q:1/4=130
+K:G
+"G" D G "D"G3/2  F/|"G" G B "D" B A|"G" d d "C" d>c|"D" B A "G" B2|
+"G" D G "D"G3/2  F/|"G" G B "A" B A|"D" d A A>G|"A" F  E "D" D2|
+"D" d d "G"d G|"D7" c "G" B "D" B A|"G" d d d G|"D7" c "G" B "D" B A|
+"C" e e e "E7" d|"Am" c "E" B "Am" c2|"D" A  B/c/ "G"d>G|"C" G "D" A "G" B2|
+"C" e>e e "E7" d|"Am" c "E" B "Am" c2|"D" A B/c/ "G" d>G|"C" G "D" A "G" G2|]
+
+X:8002
+T:Here We Come A-Wassailing
+R:Irregular
+C:Trad.
+O:England
+M:6/8
+L:1/8
+Q:3/8=110
+K:D
+"D"zD|D2E F2E|D2E F2E|D2A "A7"A2A|"D"A3- A3|
+"G"B2B "D"A2F|"A7"A3 G2F|"Em"E2D E2F|"A7"G4|
+[M:2/2] F2G2|"D"A4 "G"d2B2|"D"A4 "A7"F2G2|"D"A2A2 "G"d2B2|"D"A4 "A7"F2G2|"D"A4 "B7"B2F2|"Em"G2E2 "A7"D2C2|
+"D"D3E F2D2|"Em"G4 "A7"F2G2|"D"A4 "B7"B2F2|"Em"G2E2 "A7"D2C2|"D"D4-D2|]
+
+X:8003
+T:Holly and the Ivy, The
+R:Waltz
+C:Trad.
+O:England
+M:3/4
+L:1/4
+Q:1/4=140
+K:G
+G|"G" G/G/ G "C"e|"G"d B>G| G/G/ G "C" e|"D" d2 d/c/|
+"G" B/A/ G B/B/|"Am" E/E/ "D" D G/A/|"G" B/c/ B "D" A|"G" G2 z/G/|
+"G" G/G/ G "C" e|"G" d B G/G/|G/G/ G "C" e|"D" d2 d/c/|
+"G" B/A/ G B|"Am" E/E/ "D" D G/A/|"G" B/c/ B "D" A|"G" G2|]
+
+X:9002
+T:In Dulci Jubilo
+M:6/8
+L:1/8
+K:G
+G|"G"G2G B2c|"D"d2e d2d|"G"G2G B2c|"D"d2e d2d|"D"d2e d2c|"Em"B3 G2G|"D"A2A B2A|"Em"G2A B2B||
+"D"d2e d2c|"Em"B3 G2G|"Am"A2A B2A|"Em"G2A B2B|"C"E2E "D"FEF|"G"G3 d3|"D7"B2B AGA|"G"G3- G2|]
+
+X:9006
+T:It Came Upon the Midnight Clear
+M:4/4
+L:1/8
+Q:1/4=120
+K:G
+GA|"G"B2 A2 "Em"G2 AB|"C"c2 B2 "D"A2 d2|"G"d2 B2 "C"cd e2|"G"d6|
+"G"Bc|d2 d2 "Em"B2 G2|"C"c2 B2 "D"A2 GA|"G"Bc d2 "D"B2 A2|"G"G6||
+"G"G2|"B7"F2 E2 F2 A2|"Em"G3 F E2 B2|"A7"A2 G2 F2 E2|"D"D6|
+"D"D2|"G"d2 c2 "Em"B2 AB|"C"c2 B2 "D"A2 GA|"G"Bc d2 "D"B2 A2|"G"G6|]
+
+X:9007
+T:I Wonder as I Wander
+M:6/8
+L:1/8
+Q:3/8=50
+K:Bm
+F|"Bm"BFB/2B/2 dcB|"D"AFD "A7"E2E|"Bm"BFB dcB|"F#m"dc3/2B/2 "Bm"B2F|
+"Bm"BFB dcB|"G"dcB "D"A2F|"Bm"BFB/2B/2 "D"dHfz/2B/2|"Bm"dBF B2|]
+
+X:10002
+T:Jingle Bells
+M:4/4
+L:1/4
+Q:1/4=200
+K:G
+"G"DB AG|D3 D/2D/2|DB AG|"C"E4|"Am"Ec BA|"D7"F3 z/2 F/2|dd cA|"G"B3 z/2 D/2|
+DB AG|D3 z/2 D/2|DB AG|"C"E3 z/2 E/2|"Am"Ec BA|"G"dd dd|"D7"ed cA|"G"G2 "D7"d2|
+"G"BB B2|BB B2|Bd G3/2A/2|B4|"C"cc c3/2c/2|"G"cB BB/2B/2|"A7"BA AB|"D7"A2 d2|
+"G"BB B2|BB B2|Bd G3/2A/2|B4|"C"cc c3/2c/2|"G"cB BB/2B/2|"D7"dd cA|"G"G2 z2|]
+
+X:10003
+T:Joy to the World
+M:2/2
+L:1/4
+Q:1/2=100
+K:D
+"D"d2 "A"c>B|"D"A3 "A7"G|"D"F2 "A7"E2|"D"D3 A|"G"B3 B|"A7"c3 c|"D"d4 -|d3 d|
+"D"dc BA|A>G Fd|dc BA|A>G FF|FF FF/G/|A3 G/F/|
+"A7"EE EE/F/|G3 F/E/|"D"Dd- "G"dB|"D"A>G F"Em"G|"A7"F2 E2|"D"D4|]
+
+X:15001
+T:O Come, All ye Faithful
+M:4/4
+L:1/4
+Q:1/4=130
+K:G
+G|"G" G2 D G|"D" A2 D2|"G" B A B "C" c|"G" B2 "D" A G|"Em" G2 "A"F E|"D" F G A B|"A7" F2 E>D|"D" D3 z|
+"G" d2 c B|"C" c2 "G" B2|"D" A B "A7" G A|"D" F>E DG|"G" G "D"F "G"G "D"A|"G"G2 D B|
+B "D"A "G"B "D7"c|"G"B2 "D"A "G"B|"D7"c B "A7"A G|"D" F2 "G" G "C" c|"G" B2 "D" A>G|"G" G3|]
+
+X:15002
+T:O Come, O Come Emmanuel
+M:4/4
+L:1/4
+Q:1/4=120
+K:Em
+E |"Em"G B BB |"Am"A c "D"B A| "G"G3 A| "Em"B G EG |"D"A F ED|"Em" E3A|
+"Am" A E EF |"C"G2 FE |"D"D3G|"Em" A B B B |"Am"A c "D"B A |"G"G3 d||
+"D"d3 B|"B7"B3 "Em"B |"Am"A c "D"B A| "G"G3 A | "Em"B G E G |"Am"A F "D"E D |"Em"E3 |]
+
+X:15003
+T:O Holy Night
+M:6/8
+L:1/8
+Q:3/8=100
+K:D
+"D"F3 F2 F|A3- A2 A|"G"B2 B G2 B|"D"d6|A2 A F2 E|D3 F2 G|"A"A3 G2 E|"D"D6-|D4 z2|
+"D"F3 F2 F|A3- A2 A|"G"B2 B G2 B|"D"d6|A2 A ^G2 F|"F#m"c3 A2 B|"C#"c3 d2 c|"F#m"F6-|F3 z2A|
+"A"A3 B3|E3 A3|"D"B2 A d2 F|B3 A2 A|"A"A3 B3|E3 A3|"D"B2 A d2 F|A3- A2 z||
+"Bm"d6-|d2 z c2 B|"F#m"c6-|c2 z c3|"Em"e6-|e z B B2 B|"Bm"d6-|d3 z2 d|
+"D"f6|"A"e3- e2 A|"D"d6-|"G"d2 z c2 B|"D"A6-|"A"A z A B2 A|"D"A6-|A2 z d3|
+"A"e6-|e2 z A3|"D"f6-|f3 "A"e3|"D"d3- d2 z|"A"c3 d2 e|"D"d6-|d4 z2|]
+
+X:15004
+T:O Little Town of Bethlehem
+M:4/4
+L:1/8
+Q:1/4=120
+K:G
+"D"D2 |"G"G2 G2 "Em"G2 A2 |"Am"BABc "G"d2 B2| "C"c2 BG "D"A2 A2| "G"G6:|
+"G"GB |d3 e dc BA |GA Bc d2 D2 |"Em"G2 B2 "A7"A2 G2 |"D"D4 z2|
+"D"D2 |"G"G2 G2 "Em"G2 A2 |"Am"BABc "G"d2 B2 |"C"c2 BG "D"A2 A2|"G"G6|]
+
+X:15006
+T:O Tannenbaum
+M:3/4
+L:1/4
+Q:1/4=110
+K:D
+A,|"D"D3/4D1/4 D "A7"E|"D"F3/4F1/4 F3/2 F1/2|"Em"E1/2F1/2 G "A7"C|"D"E D:|
+z1/2A/2|"D"A1/2F1/2 B3/2A1/2|"A"A1/2G1/2 G3/2G1/2|G1/2E1/2 A3/2G1/2|"D"G1/2F1/2 F|
+"A7"A,|"D"D3/4D1/4 D "A7"E|"D"F3/4F1/4 F3/2F1/2|"Em"E1/2F1/2 G "A7"C|"D"E D|]
+
+X:19004
+T:Silent Night
+M:6/8
+L:1/8
+Q:3/8=60
+K:C
+"C"G>A G E3|G>A G E2z|"G"d2 d B3|"C"c2 c G2z|
+"F"A2 A c>B A|"C"G>A G E2z|"F"A2 A c>B A|"C"G>A G E2z|
+"G7"d2 d f>d B|"C"c3 e2z|cGE "G7"G>F D|"C"C3-C3|]
+
+X:20001
+T:Twelve Days of Christmas, The
+M:2/2
+L:1/8
+Q:1/4=120
+K:G
+DD|"G"D2 GG G2 GG|"D7"ABcA "G"B3 z||
+[M:3/4]]"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|"D7"d2 AB "Am7"cA|
+[M:2/2]]"D"d4 "A7"e ^c3|"D"d6z2|[M:3/4]"G"dcBA G2 |"C"c2 E2 G2 |[M:2/2]"D"AGFE D2 Bc |"G"d2 "C"ec "G"BG "D7"A2 |"G"G4|]
+
+X:23001
+T:We Wish You A Merry Christmas
+M:3/4
+L:1/8
+Q:1/4=180
+K:G
+D2|"G" G2 GAGF|"C" E2 C2 E2|"A" A2 ABAG|"D" F2 D2 D2|"B7" B2 BcBA|"Em" G2 E2 DD|"C" E2 A2 "D" F2|"G" G4 D2||
+"G" G2 G2 G2|"D" F4 F2|"A" G2 F2 E2|"D7" D4 A2|"G" B2 AA G2|"D" d2 D2 DD|"C" E2 A2 "D" F2|"G" G6|]
+
+X:23002
+T:We Three Kings Of Orient Are
+M:6/8
+L:1/8
+Q:3/8=90
+K:Em
+"Em"B2A G2E|"B7"FGF "Em"E3|B2A G2E|"B7"FGF "Em"E3|
+G2G "D"A2A|"G"B2B "D7"dcB|"Am"ABA "B7"G2F|"Em"E3 z3|[K:G] "D7"F3 A3||
+"G"G2G G2D|"C"G2E "G"G3|G2G G2D|"C"G2E "G"G3|
+"Em"G2G "D"A2"G"B|"C"c2B "D"A2B|"G"G2G G2D|"C"G2E "G"G3|]
+
+X:23005
+T:Winter Wonderland
+M:4/4
+L:1/8
+Q:1/4=120
+K:C
+"G7"G>G|"C"G6 G>G|E2 G4 G>G|"G7"G6 G>G|F2 G4 z G|
+"G7"BB B A-A3 A|GG G F-F3 E|"C"E>E E>E "G7"D>D D>D| "C"C6!fine!y:|
+"D7"D>^C |"E"B,>B, ^G>G "A"^C>C A>A|"E"^G2 E6|"E"B,>B, ^G>G "A"^C>C A>A|"E"^G4 "D7"z3/2 F/2 E>^D|
+"G"D>D B>B "C"E>E c>c|"G"B2 G4 G2|"Em"B>B E>E "D7"A>A D>D|"G"G6!D.C.!y|]
